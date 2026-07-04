@@ -1,0 +1,47 @@
+services:
+  postgres:
+    image: postgres:18
+    environment:
+      POSTGRES_DB: ponte_segura
+      POSTGRES_USER: ponte
+      POSTGRES_PASSWORD: ponte
+    ports:
+      - "5432:5432"
+    volumes:
+      - ponte_segura_postgres:/var/lib/postgresql/data
+      - ../../packages/database/src/schema.sql:/docker-entrypoint-initdb.d/001_schema.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ponte -d ponte_segura"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build:
+      context: ../..
+      dockerfile: apps/api/Dockerfile
+    environment:
+      NODE_ENV: development
+      PORT: 3000
+      DATABASE_URL: postgres://ponte:ponte@postgres:5432/ponte_segura
+      NODE_ID: 0197d845-0000-7000-8000-000000000001
+      NODE_NAME: node-local
+    ports:
+      - "3000:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  worker:
+    build:
+      context: ../..
+      dockerfile: apps/worker/Dockerfile
+    environment:
+      DATABASE_URL: postgres://ponte:ponte@postgres:5432/ponte_segura
+      WORKER_INTERVAL_MS: 5000
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  ponte_segura_postgres:
