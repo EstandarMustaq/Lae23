@@ -6,6 +6,7 @@
   "packageManager": "pnpm@9.15.0",
   "scripts": {
     "build": "corepack pnpm -r build",
+    "dev": "corepack pnpm --filter @ponte-segura/web dev",
     "dev:api": "corepack pnpm --filter @ponte-segura/api start:dev",
     "dev:worker": "corepack pnpm --filter @ponte-segura/worker start:dev",
     "test": "corepack pnpm -r test",
